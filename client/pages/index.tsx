@@ -1,9 +1,20 @@
 import { GetStaticProps, NextPage } from "next";
 import Head from "next/head";
 import styled from "@emotion/styled";
-import { List, ListItem, ListItemButton, ListItemText } from "@mui/material";
+import {
+  Box,
+  IconButton,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemText,
+  Tooltip,
+  Typography,
+} from "@mui/material";
 import apolloClient from "../apollo-client";
 import { gql } from "@apollo/client";
+import { ShoppingCart } from "@mui/icons-material";
+import AdbIcon from "@mui/icons-material/Adb";
 
 const Container = styled.div`
   display: grid;
@@ -31,6 +42,8 @@ const NavBar = styled.nav`
   background: #3a3a55;
   grid-area: nav;
   padding: 0.25rem;
+  display: flex;
+  justify-content: space-between;
 `;
 const Main = styled.main`
   background: #1f2128;
@@ -53,15 +66,17 @@ interface QueryResponse {
     name: string;
   }[];
   foods: {
-    name: string
-    price: number
-    description: string
-    stock: number
+    name: string;
+    price: number;
+    description: string;
+    stock: number;
   }[];
 }
 
 export const getStaticProps: GetStaticProps<IProps> = async () => {
-  const { data: {foodCategories} } = await apolloClient.query<QueryResponse>({
+  const {
+    data: { foodCategories },
+  } = await apolloClient.query<QueryResponse>({
     query: gql`
       query FoodCategories {
         foodCategories {
@@ -71,9 +86,11 @@ export const getStaticProps: GetStaticProps<IProps> = async () => {
     `,
   });
 
-  const { data: {foods} } = await apolloClient.query<QueryResponse>({
+  const {
+    data: { foods },
+  } = await apolloClient.query<QueryResponse>({
     query: gql`
-      query Foods($categoryName: String!  ) {
+      query Foods($categoryName: String!) {
         foods(categoryName: $categoryName) {
           name
           price
@@ -83,19 +100,20 @@ export const getStaticProps: GetStaticProps<IProps> = async () => {
       }
     `,
     variables: {
-      categoryName: foodCategories[0].name
-    }
+      categoryName: foodCategories[0].name,
+    },
   });
 
   return {
     props: {
       foodCategories: foodCategories.map(({ name }) => name),
-      foods
+      foods,
     },
   };
 };
 
-const Home: NextPage<IProps> = ({foodCategories, foods}) => {
+const Home: NextPage<IProps> = ({ foodCategories, foods }) => {
+
   return (
     <div>
       <Head>
@@ -104,26 +122,56 @@ const Home: NextPage<IProps> = ({foodCategories, foods}) => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <Container>
-        <NavBar>Logo Mclloyd picture Shopping Cart</NavBar>
+        <NavBar>
+            <AdbIcon />
+            <Typography
+              variant="h6"
+              noWrap
+              component="a"
+              href="/"
+              sx={{
+                mr: 2,
+                display: "flex",
+                fontFamily: "monospace",
+                fontWeight: 700,
+                letterSpacing: ".3rem",
+                color: "inherit",
+                textDecoration: "none",
+              }}
+            >
+              SHOPPING
+            </Typography>
+          <Box>
+            <Tooltip title="Shopping Cart">
+              <IconButton
+                size="large"
+                edge="start"
+                color="inherit"
+                aria-label="menu"
+              >
+                <ShoppingCart />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        </NavBar>
         <SideBar>
           <List>
             {foodCategories.map((text, index) => (
               <ListItem key={text} disablePadding>
                 <ListItemButton>
                   <ListItemText primary={text} />
-                  
                 </ListItemButton>
               </ListItem>
             ))}
           </List>
         </SideBar>
         <Main>
-        <List>
+          <List>
             {foods.map((food) => (
               <ListItem key={food.name} disablePadding>
-                  <span>{food.name}</span>
-                  <span>price: {food.price}</span> 
-                  <span>stock: {food.stock}</span> 
+                <span>{food.name}</span>
+                <span>price: {food.price}</span>
+                <span>stock: {food.stock}</span>
                 <ListItemButton>
                   <ListItemText primary={"Buy"} />
                 </ListItemButton>
@@ -137,3 +185,4 @@ const Home: NextPage<IProps> = ({foodCategories, foods}) => {
 };
 
 export default Home;
+
