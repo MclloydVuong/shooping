@@ -5,11 +5,13 @@ const FoodSchema = new mongoose.Schema({
     price: Number,
     description: String,
     stock: Number,
-    category: String,
+    category: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'FoodCategory'
+    } 
   });
 
 
 const Food = mongoose.models.Food || mongoose.model("Food", FoodSchema);
 
-// Export the model
 module.exports = { Food };

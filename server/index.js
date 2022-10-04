@@ -2,6 +2,7 @@ const { ApolloServer, gql } = require("apollo-server");
 const mongoose = require("mongoose");
 const { Food } = require("./models/Food");
 const { loadSeedData } = require("./loadSeedData");
+const { FoodCategory } = require("./models/FoodCategory");
 
 const typeDefs = gql`
   type Food {
@@ -11,15 +12,26 @@ const typeDefs = gql`
     stock: Int
     category: String
   }
+  
+  type FoodCategory {
+    name: String
+  }
 
   type Query {
-    foods: [Food]
+    foods(categoryName: String!): [Food]
+    foodCategories: [FoodCategory]
   }
+
 `;
 
 const resolvers = {
   Query: {
-    foods: async () => await Food.find({}),
+    foods: async (_, {categoryName}) => {
+      const foodCategory = await FoodCategory.findOne({name: categoryName}).populate('foods')
+      const foods = foodCategory.foods
+      return foods
+    },
+    foodCategories: async () => await FoodCategory.find({}),
   },
 };
 
@@ -28,6 +40,7 @@ const server = new ApolloServer({
   resolvers,
   context: () => ({
     Food,
+    FoodCategory
   }),
 });
 
